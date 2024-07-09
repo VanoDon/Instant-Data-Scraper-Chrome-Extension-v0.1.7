@@ -1,5 +1,8 @@
 /*! instantDataScraper - 2018-02-26 */
 
+/**
+ * Main function to initiate data scraping.
+ */
 function a(a, b, c, d, e, f, g) {
     function h() {
         !n && o && (g || function(a) { a(!0) })(function(a) {
@@ -7,12 +10,24 @@ function a(a, b, c, d, e, f, g) {
             n || (n = !0, chrome.webRequest.onBeforeRequest.removeListener(i), chrome.webRequest.onCompleted.removeListener(j), b())
         })
     }
+    
+    /**
+     * Function to handle the start of a web request.
+     */
     function i(a) {
         l[a.requestId] = 1, m = new Date
     }
+    
+    /**
+     * Function to handle the completion of a web request.
+     */
     function j(a) {
         m && (delete l[a.requestId], Object.keys(l).length || k())
     }
+    
+    /**
+     * Function to handle the timeout of the scraping process.
+     */
     function k() {
         setTimeout(function() { new Date - m < e || Object.keys(l).length || h() }, e)
     }
@@ -21,12 +36,24 @@ function a(a, b, c, d, e, f, g) {
         setTimeout(h, d), setTimeout(function() { o = !0, k() }, f)
     })
 }
+
+/**
+ * Function that "cleans" and formats a string for turning into a file path.
+ */
 function b(a, b) {
     return (b || ".") + a.replace(/[!"#$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, "\\$&")
 }
+
+/**
+ * Function to extract class names.
+ */
 function c(a) {
     return (a.attr("class") || "").trim().split(/\s+/).filter(function(a) { return a })
 }
+
+/**
+ * Function to take a query parameter from the URL.
+ */
 function d(a) {
     for (var b = window.location.search.substring(1), c = b.split("&"), d = 0; d < c.length; d++) {
         var e = c[d].split("=");
@@ -34,6 +61,10 @@ function d(a) {
     }
     console.log("Query variable %s not found", a)
 }
+
+/**
+ * Function to display message.
+ */
 function e(a, b, c, d) {
     if ("" === a) return $("#" + b).hide();
     console.log(a), $("#" + b).show().text(a), c && s(), d && _gaq.push(["_trackEvent", "Error", x.startingUrl || w.url, a, 1])
