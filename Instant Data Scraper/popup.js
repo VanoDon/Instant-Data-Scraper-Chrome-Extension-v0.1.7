@@ -2,40 +2,55 @@
 
 /**
  * Main function to initiate data scraping.
+ * 
+ * @param {Function} callback - Callback function to handle the result of the scraping process.
+ * @param {Function} cleanup - Function to perform cleanup actions after scraping.
+ * @param {number} tabId - ID of the tab where the scraping is happening.
+ * @param {number} delay - Delay in milliseconds before starting the scraping process.
+ * @param {number} maxWait - Maximum waiting time in milliseconds for the scraping process.
+ * @param {number} crawlDelay - Delay between each crawl request.
+ * @param {boolean} debug - Flag to enable or disable debug mode.
  */
-function a(a, b, c, d, e, f, g) {
-    function h() {
-        !n && o && (g || function(a) { a(!0) })(function(a) {
-            if (!a) return k();
-            n || (n = !0, chrome.webRequest.onBeforeRequest.removeListener(i), chrome.webRequest.onCompleted.removeListener(j), b())
-        })
+function initiateDataScraper(callback, cleanup, tabId, delay, maxWait, crawlDelay, debug) {
+    /**
+     * Function to handle the completion of the scraping process.
+     */
+    function handleCompletion() {
+        if (!isCompleted && isReady && (debug || function(callback) { callback(!0) })(function(shouldContinue) {
+            if (!shouldContinue) return handleTimeout();
+            isCompleted || (isCompleted = !0, chrome.webRequest.onBeforeRequest.removeListener(handleBeforeRequest), chrome.webRequest.onCompleted.removeListener(handleRequestCompletion), cleanup())
+        }))
     }
     
     /**
      * Function to handle the start of a web request.
+     * 
+     * @param {Object} request - The request object containing details about the request.
      */
-    function i(a) {
-        l[a.requestId] = 1, m = new Date
+    function handleBeforeRequest(request) {
+        requestTimestamps[request.requestId] = 1, startTime = new Date
     }
     
     /**
      * Function to handle the completion of a web request.
+     * 
+     * @param {Object} request - The request object containing details about the request.
      */
-    function j(a) {
-        m && (delete l[a.requestId], Object.keys(l).length || k())
+    function handleRequestCompletion(request) {
+        if (startTime) {
+            delete requestTimestamps[request.requestId];
+            if (Object.keys(requestTimestamps).length === 0) handleTimeout();
+        }
     }
     
     /**
      * Function to handle the timeout of the scraping process.
      */
-    function k() {
-        setTimeout(function() { new Date - m < e || Object.keys(l).length || h() }, e)
+    function handleTimeout() {
+        setTimeout(function() {
+            if (new Date - startTime < maxWait || Object.keys(requestTimestamps).length !== 0) return handleCompletion();
+        }, maxWait);
     }
-    var l = {}, m = null, n = !1, o = !1, p = { urls: ["<all_urls>"], tabId: c, types: ["main_frame", "sub_frame", "stylesheet", "script", "font", "object", "xmlhttprequest", "other"] };
-    chrome.webRequest.onBeforeRequest.addListener(i, p), chrome.webRequest.onCompleted.addListener(j, p), chrome.webRequest.onErrorOccurred.addListener(j, p), (a || function(a) { a() })(function() {
-        setTimeout(h, d), setTimeout(function() { o = !0, k() }, f)
-    })
-}
 
 /**
  * Function that "cleans" and formats a string for turning into a file path.
